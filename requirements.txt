@@ -1,0 +1,11 @@
+python-multipart
+fastapi[standard]
+uvicorn[standard] 
+opencv-python-headless
+pytesseract
+numpy
+pandas
+selenium
+openai
+google-genai
+schedule
