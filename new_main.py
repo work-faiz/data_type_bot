@@ -476,7 +476,7 @@ def click_on_dynamic_row(driver, row_no):
     try:
         image_number = config.get('xpaths', 'image_number')
         image_number = image_number.replace('COUNT', str(row_no))
-        image_number = image_number.replace('EMAIL_ID', config.get('creds', 'email'))
+        image_number = image_number.replace('EMAIL_ID', config_ini.get('creds', 'email'))
         driver.find_element(By.XPATH, image_number).click()
         time.sleep(2)
     except Exception as e:
