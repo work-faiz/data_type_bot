@@ -162,6 +162,53 @@ validation_messages = {
     }
 
 
+prompt_template = """
+Extract data from the given unstructured text into EXACTLY the following 34 fields. 
+If a field is missing, return "" (empty string). Do not add or remove fields. 
+Bifucate text based on context given against the provided structured data.
+Return only valid JSON.
+
+Fields (in order):
+1. RecordNumber: HUSA_tA-Jgyk-976568
+2. Patient Name: Atlee1Tjo5051 HobanOSJimmy
+3. Father Name: Justin_M_Whitehoneckt Deters
+4. Address_1: 444 MISILLA VLIW DR1862 WILLOWBROOK DRIVI
+5. Email Address:  jonweitzmannbbanksp1@peds.uab.edu
+6. PhoneNo_1: 123-456-7890
+7. Date_Of_Birth: Monday, 01/01/1990
+8. CovidCase_Number: 7551632
+9. BloodType: O+
+10. Country: USA
+11. PostCode: 90210
+12. Height: 180
+13. Weight: 75
+14. Gender: Male
+15. PatientId: WZ869940
+16. BillingName: Atlee1Tjo5051
+17. Phone_No2: 123-456-7890
+18. Claim Number: Yt_i7-Un-9864
+19. UHID_Number: BaX_OlaCm-4153
+20. BillNumber: Bill-KeH_ytHrO1091799
+21. Admission Date_Time: 01/01/2023 10:00 AM
+22. Symptoms: Cough and Fever
+23. HospitalName: General Hospital
+24. HospitalAddress: 123 Main St, Anytown, USA
+25. Hospital_PhoneNo: (123) 456-7890
+26. Consultant: Dr. Smith
+27. Refer By: self
+28. Policy No: yW2X_092_J43985
+29. Policy Code: Gz-09_(OPxt)28924
+30. Claim Status: yes
+31. Adjusted Amount: $100.00
+32. Total Paid: $100.00
+33. Card Name: Master Card
+34. Card Number: 4111-1111-1111-1111
+
+Now process this text:
+
+INPUT_TEXT
+"""
+
 def make_chatgpt_call(text):
     try:
         gpt_client = OpenAI(api_key=config_ini.get('openai', 'api_key'))
@@ -169,20 +216,9 @@ def make_chatgpt_call(text):
             model="gpt-5-nano",
             messages=[
             {
-                "role": "system",
-                "content": "You are a data extraction expert. Classify the provided text and return the result in JSON format."
-            },
-            {
                 "role": "user",
-                "content": f"""
-                    I want you to classify the provided text into specific categories and populate the corresponding JSON structure accordingly. 
-                    Here is the text I want you to process: '{text}'. 
-
-                    Here is an example of how I want the JSON to be populated: {{"RecordNumber": "HUSA_912394", "Patient Name": "Badgernet David", "Father Name": "Adjudge Cocaine", "Address_1": "12711 Mitchill Avinui #7", "Email Address": "eyedocbernsie@hotmail.com", "PhoneNo_1": "718-322-2710", "Date_Of_Birth": "09/30/1959", "CovidCase_Number": "975M1843", "BloodType": "B+", "Country": "USA", "PostCode": "43730", "Height": "173.51", "Weight": "168.90", "Gender": "MALE", "PatientId": "HVS65466", "BillingName": "Badgernet David", "Phone_No2": "(263)-654-7654", "Claim Number": "FR-DLIO9_12832", "UHID_Number": "BaX_OlaCp_12991", "BillNumber": "GITR_1013i7", "Admission Date_Time": "Wednesday, May 20, 2020 8:57:00 PM", "Symptoms": "LOSS OF TASTE OR SMELL", "HospitalName": "Boone Hospital Center", "hospitalAddress": "6000 N. Canon Dil Pajaro", "Hospital_PhoneNo": "6890362197", "Consultant": "Luckle Mickey", "Refer By": "self", "Policy No": "BaX#_O,lacM-41220", "Policy Code": "a_iyZ/9265", "Claim Status": "yes", "Adjusted Amount": "$250", "Total Paid": "$350", "Card Name": "MasterCard", "Card Number": "0528 0011 0895 1767"}}. 
-                    I want you to also ensure accuracy in the classification of each field and follow the same structure. The output must be in JSON format.
-                    I want you to also know that the classification should be done in sequential order as per the categories listed in the JSON structure.
-                """
-            }
+                "content": prompt_template.replace("INPUT_TEXT", text)
+            },
             ]
         )
         response_json = response.choices[0].message.content
@@ -203,14 +239,7 @@ def make_gemini_call(text):
             config=genai.types.GenerateContentConfig(
                 system_instruction="You are a data extraction expert with extensive experience in parsing and classifying complex information from unstructured text.",
             ),
-            contents = f""" 
-                I want you to classify the provided text into specific categories and populate the corresponding JSON structure accordingly. 
-                Here is the text I want you to process: '{text}'. 
-
-                Here is an example of how I want the JSON to be populated: {{"RecordNumber": "HUSA_912394", "Patient Name": "Badgernet David", "Father Name": "Adjudge Cocaine", "Address_1": "12711 Mitchill Avinui #7", "Email Address": "eyedocbernsie@hotmail.com", "PhoneNo_1": "718-322-2710", "Date_Of_Birth": "09/30/1959", "CovidCase_Number": "975M1843", "BloodType": "B+", "Country": "USA", "PostCode": "43730", "Height": "173", "Weight": "168", "Gender": "MALE", "PatientId": "HVS65466", "BillingName": "Badgernet David", "Phone_No2": "(263)-654-7654", "Claim Number": "FR-DLIO9_12832", "UHID_Number": "BaX_OlaCp_12991", "BillNumber": "GITR_1013i7", "Admission Date_Time": "Wednesday, May 20, 2020 8:57:00 PM", "Symptoms": "LOSS OF TASTE OR SMELL", "HospitalName": "Boone Hospital Center", "hospitalAddress": "6000 N. Canon Dil Pajaro", "Hospital_PhoneNo": "6890362197", "Consultant": "Luckle Mickey", "Refer By": "self", "Policy No": "BaX#_O,lacM-41220", "Policy Code": "a_iyZ/9265", "Claim Status": "yes", "Adjusted Amount": "$250", "Total Paid": "$350", "Card Name": "MasterCard", "Card Number": "0528 0011 0895 1767"}}. 
-                I want you to also ensure accuracy in the classification of each field and follow the same structure. The output must be in JSON format.
-                I want you to also know that the classification should be done in sequential order as per the categories listed in the JSON structure.
-            """
+            contents = prompt_template.replace("INPUT_TEXT", text)
         )
         print(response.text)
         return response.text
