@@ -2,3 +2,5 @@ schedule
 selenium
 openai
 google-genai
+psycopg2-binary
+psycopg2
