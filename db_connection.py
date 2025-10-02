@@ -64,7 +64,7 @@ def can_we_start(config):
         cursor = conn.cursor()
         cursor.execute(f'SELECT * FROM {config.get("TABLE", "name")} WHERE bot_status isnull;')
         rows = cursor.fetchall()
-        if len(rows) >= 1:
+        if len(rows) >= 10:
             return True
         return False
     except Exception as e:
